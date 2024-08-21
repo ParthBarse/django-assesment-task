@@ -1,0 +1,9 @@
+asgiref
+Django
+numpy
+Pillow
+pytesseract
+sqlparse
+tzdata
+fpdf
+mysqlclient

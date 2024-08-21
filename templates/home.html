@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description"
+        content="Extract or scan text from images in multiple languages- English Hindi Nepali etc. Quickly Get Text from Image">
+    <title>OCR</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="http://fonts.cdnfonts.com/css/euclid-circular-a?styles=100037,100034,100036,100039,100031"
+        rel="stylesheet">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <script src="/static/error.js"></script>
+
+    <style>
+        html {
+            background-color: #82ffcd;
+        }
+
+        section {
+            background-color: #82ffcd;
+        }
+    </style>
+
+    <!-- Webcam Access Script -->
+    <script>
+        let video = document.createElement('video');
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.play();
+                document.getElementById('webcam-container').style.display = 'block';  // Show webcam
+                document.getElementById('upload-btn').style.display = 'none';  // Hide upload button
+                document.getElementById('retry-btn').style.display = 'none';  // Hide retry button
+                document.getElementById('capture-btn').style.display = 'inline-block';  // Show capture button
+                document.getElementById('webcam-container').appendChild(video);
+            } catch (err) {
+                console.error('Error accessing webcam: ', err);
+            }
+        }
+
+        function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('captured-image').src = dataUrl;
+            document.getElementById('image-data').value = dataUrl;  // pass image data to hidden input
+
+            // Hide webcam and show captured image
+            document.getElementById('webcam-container').style.display = 'none';
+            document.getElementById('captured-image-container').style.display = 'block';
+            document.getElementById('capture-btn').style.display = 'none';  // Hide capture button
+            document.getElementById('retry-btn').style.display = 'inline-block';  // Show retry button
+        }
+
+        function retryCapture() {
+            document.getElementById('captured-image-container').style.display = 'none';
+            startWebcam();
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                document.getElementById('captured-image').src = reader.result;
+                document.getElementById('captured-image-container').style.display = 'block';
+                document.getElementById('webcam-container').style.display = 'none';
+                document.getElementById('retry-btn').style.display = 'none';
+                document.getElementById('capture-btn').style.display = 'none';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</head>
+
+
+<body class="bg-slate-50" style="font-family: 'Euclid Circular A', sans-serif;">
+    <!-- error popup modal -->
+    {% if messages %}
+    {% for msg in messages %}
+    <div id="error-modal" class="flex animate-pulse w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg
+       fixed left-8 top-8">
+        <div class="px-4 py-2 -mx-3">
+            <div class="mx-3">
+                <span class="font-semibold text-slate-800 ">Error</span>
+                <p class="text-sm text-gray-600 ">{{msg}}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <!-- error popup modal -->
+
+    <section class="text-gray-600" style="margin-bottom: 82px;">
+        <div class="container px-5 py-8 mx-auto">
+            <div class="flex flex-col text-center w-full mb-2">
+                <h1 class="sm:text-7xl text-2xl font-medium mb-4 text-gray-900">Django OCR</h1>
+            </div>
+
+
+            <!-- Update HTML structure -->
+            <div class="buttons">
+                <!-- Existing upload button -->
+                <button id="upload-btn" onclick="document.getElementById('formFile').click()"
+                    class="custom-btn shadow-md mb-2">
+                    Upload Img <i class="fi fi-rr-upload"></i>
+                </button>
+
+                <!-- New webcam capture button -->
+                <button type="button" onclick="startWebcam()" id="webcam-btn" class="custom-btn shadow-md mb-2">
+                    Open Webcam <i class="fi fi-rr-camera"></i>
+                </button>
+
+                <!-- Capture button -->
+                <button type="button" onclick="captureImage()" id="capture-btn"
+                    class="custom-btn shadow-md bg-white mb-2" style="display: none;">
+                    Capture Image <i class="fi fi-rr-picture"></i>
+                </button>
+
+                <!-- Retry button -->
+                <button type="button" onclick="retryCapture()" id="retry-btn" class="custom-btn shadow-md bg-white mb-2"
+                    style="display: none;">
+                    Retry <i class="fi fi-rr-refresh"></i>
+                </button>
+
+                <button id="upload-btn" class="custom-btn shadow-md mb-2">
+                    <a href="/history">History <i class="fi fi-rr-time-past"></i></a>
+                </button>
+
+                <!-- Form to submit the captured image -->
+                <form method="post" enctype="multipart/form-data" class="flex justify-center">
+                    {% csrf_token %}
+                    <input name="imagefile" accept="image/*" type="file" id="formFile" style="display: none;"
+                        onchange="previewImage(event)">
+                    <input type="hidden" name="image_data" id="image-data">
+                    <button type="submit" class="custom-btn shadow-md bg-white">Scan <i
+                            class="fi fi-rr-search"></i></button>
+                </form>
+            </div>
+
+            <!-- Webcam container -->
+            <center>
+                <div id="webcam-container" class="flex justify-center ease-out m-5 rounded-2xl duration-300"
+                    style="display: none;"></div>
+            </center>
+
+            <!-- Display captured or selected image -->
+            <center>
+                <div id="captured-image-container" class="flex justify-center ease-out m-5 rounded-2xl duration-300"
+                    style="display: none;">
+                    <img id="captured-image" class="" justify-center rounded-2xl hover:scale-105 stroke-white stroke-2
+                        duration-500" style="width: 480px; height: 220px;" />
+                </div>
+            </center>
+
+            <!-- Uploaded image will be shown -->
+            {% if image %}
+            <div class="flex justify-center ease-out m-5 rounded-2xl duration-300">
+                <img class="justify-center rounded-2xl hover:scale-105 stroke-white stroke-2 duration-500"
+                    src="data:image/png;base64, {{ image }}" , style="width: 480px; height: 220px;">
+            </div>
+            {% endif %}
+
+            <!-- OCR text will be shown -->
+            {% if ocr %}
+            <div class=" ease-out bg-white text-slate-800 rounded-2xl hover:shadow-lg p-2 duration-300 w-auto">
+                <center>
+                    <h2 style="margin-bottom: 12px;"><b>OCR Text :</b></h2>
+                    <hr style="width: 420px;">
+                </center>
+                <p id="ocrtext" class="text-lg mb-8 text-center" style="margin-top: 22px;">{{ ocr }}</p>
+
+                <hr style="margin-top: 22px; margin-bottom: 22px;">
+                <div class="flex justify-center mt-4" style="margin-bottom: 22px;">
+                    <!-- Download as TXT -->
+                    <a href="{% url 'download_text' %}?text={{ ocr|urlencode }}"
+                        class="custom-btn shadow-md bg-white mx-4" style="width: fit-content;">
+                        Download TXT <i class="fi fi-rr-file"></i>
+                    </a>
+                    <!-- Download as PDF -->
+                    <a href="{% url 'download_pdf' %}?text={{ ocr|urlencode }}"
+                        class="custom-btn shadow-md bg-white mx-4" style="width: fit-content;">
+                        Download PDF <i class="fi fi-rr-file"></i>
+                    </a>
+                </div>
+                
+                
+            </div>
+            {% endif %}
+        </div>
+
+    </section>
+</body>
+
+
+</html>

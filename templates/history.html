@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>OCR History</title>
+    <style>
+        html {
+            background-color: #82ffcd;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>OCR History</h1>
+    </center>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Image Name</th>
+                <th>Extracted Text</th>
+                <th>Uploaded At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in ocr_entries %}
+            <tr>
+                <td>{{ entry.image_name }}</td>
+                <td>{{ entry.extracted_text }}</td>
+                <td>{{ entry.uploaded_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <center>
+        <button style="margin: 32px; width: 80px; height: 32px; font-size: 16px;"><a href="/">Back</a></button>
+    </center>
+</body>
+
+</html>
