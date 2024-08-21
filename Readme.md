@@ -18,7 +18,9 @@ Install and Setup OCR Django with following Commands and Steps
 ```bash
   git clone https://github.com/ParthBarse/django-assesment-task.git
   cd django-assesment-task
-  pip install -r requirements
+  pip install -r requirements.txt
+  python manage.py makemigrations 
+  python manage.py migrate 
   python manage.py runserver 
   
   # open localhost:8000  url in browser 
